@@ -183,7 +183,11 @@ uint8_t BTLE_StackInit(void){
 	HANDLE device_name_char_handle;
 	HANDLE appearance_char_handle;
 
-	hci_reset();
+	ret = hci_reset();
+	if(ret != BLE_STATUS_SUCCESS){
+		BTLE_DBG("BTLE HCI Reset Failed: %u\r\n", ret);
+		return 1;
+	}
 	sleep_ms(2000);
 
 	//setup device address

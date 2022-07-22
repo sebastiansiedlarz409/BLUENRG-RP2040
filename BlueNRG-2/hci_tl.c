@@ -20,6 +20,8 @@
 #include "hci.h"
 #include "hci_tl.h"
 
+#include <stdio.h>
+
 #define HCI_LOG_ON                      0
 #define HCI_PCK_TYPE_OFFSET             0
 #define EVENT_PARAMETER_TOT_LEN_OFFSET  2
@@ -200,11 +202,12 @@ int hci_send_req(struct hci_request* r, BOOL async)
       
     while (1)
     {
+      printf("List size %ld %u\r\n", list_get_size(&hciReadPktRxQueue), list_is_empty(&hciReadPktRxQueue));
       if ((gettickms_bt() - tickstart) > HCI_DEFAULT_TIMEOUT_MS)
       {
+        printf("TIMEOUT\r\n");
         goto failed;
       }
-      
       if (!list_is_empty(&hciReadPktRxQueue)) 
       {
         break;
@@ -333,7 +336,7 @@ int32_t hci_notify_asynch_evt(void* pdata)
   
   int32_t ret = 0;
   
-  if (list_is_empty (&hciReadPktPool) == FALSE)
+  if (list_is_empty (&hciReadPktPool) == FALSE) //not empty
   {
     /* Queuing a packet to read */
     list_remove_head (&hciReadPktPool, (tListNode **)&hciReadPacket);
@@ -342,7 +345,7 @@ int32_t hci_notify_asynch_evt(void* pdata)
     {
       data_len = hciContext.io.Receive(hciReadPacket->dataBuff, HCI_READ_PACKET_SIZE);
       if (data_len > 0)
-      {                    
+      {                 
         hciReadPacket->data_len = data_len;
         if (verify_packet(hciReadPacket) == 0)
           list_insert_tail(&hciReadPktRxQueue, (tListNode *)hciReadPacket);
@@ -361,5 +364,4 @@ int32_t hci_notify_asynch_evt(void* pdata)
     ret = 1;
   }
   return ret;
-  
 }

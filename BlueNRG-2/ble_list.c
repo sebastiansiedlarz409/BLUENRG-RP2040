@@ -20,12 +20,27 @@
 ******************************************************************************/
 #include "ble_list.h"
 #include <stdio.h>
+#include <stdint.h>
 
 #include "ble_list_utils.h"
 
-extern uint32_t __get_PRIMASK(void);
-extern void __set_PRIMASK(uint32_t priMask);
-extern void __disable_irq(void);
+__attribute__((always_inline)) static inline uint32_t __get_PRIMASK(void)
+{
+  uint32_t result;
+
+  __asm volatile ("MRS %0, primask" : "=r" (result) :: "memory");
+  return result;
+}
+
+__attribute__((always_inline)) static inline void __set_PRIMASK(uint32_t priMask)
+{
+  __asm volatile ("MSR primask, %0" : : "r" (priMask) : "memory");
+}
+
+__attribute__((always_inline)) static inline void __disable_irq(void)
+{
+  __asm volatile ("cpsid i" : : : "memory");
+}
 
 /******************************************************************************
  * Function Definitions 

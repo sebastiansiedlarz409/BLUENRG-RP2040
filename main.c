@@ -7,14 +7,16 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#define BT_SPI spi0
+
 //spi pinout
 #define BT_CLK 18
-#define BT_MISO 17
+#define BT_MISO 16
 #define BT_MOSI 19
 
 //other bt pins
 #define BT_BOOT 22
-#define BT_CS 21
+#define BT_CS 17    //21
 #define BT_RST 20
 
 //debug uart
@@ -22,16 +24,30 @@
 #define BAUD_RATE 9600
 #define TX_PIN 0
 
-#define BT_SPI spi0
-
 void(*bootCallback)(uint, uint32_t);
+
+void init_gpio_bt(){
+    gpio_init(BT_RST);
+    gpio_init(BT_CS);
+    gpio_set_dir(BT_RST, true);
+    gpio_set_dir(BT_CS, true);
+    gpio_set_slew_rate(BT_RST, GPIO_SLEW_RATE_SLOW);
+    gpio_set_slew_rate(BT_CS, GPIO_SLEW_RATE_SLOW);
+}
 
 void init_spi_bt(){
     //init spi for bt
-    spi_init(BT_SPI, 1000 * 1000); //1mhz = 1mbs
+    printf("SPI init %d\r\n", spi_init(BT_SPI, 1000 * 1000)); //0.5mhz = 0.5mbs
+    spi_set_format(BT_SPI, 8, 0, 1, SPI_MSB_FIRST);
     gpio_set_function(BT_MISO, GPIO_FUNC_SPI);
     gpio_set_function(BT_CLK, GPIO_FUNC_SPI);
     gpio_set_function(BT_MOSI, GPIO_FUNC_SPI);
+    init_gpio_bt();
+    gpio_put(BT_CS, 1);
+}
+
+void deinit_spi_bt(){
+    spi_deinit(BT_SPI);
 }
 
 void reset_bt(){
@@ -44,20 +60,25 @@ void reset_bt(){
 }
 
 bool is_data_available_bt(){
-    return spi_is_readable(BT_SPI);
+    return gpio_get(BT_BOOT);
 }
 
 uint32_t sendrecv_spi_bt(uint8_t* txdata, uint8_t* rxdata, uint32_t length){
-    return spi_write_read_blocking(BT_SPI, txdata, rxdata, length);
+    uint32_t bytes = spi_write_read_blocking(BT_SPI, txdata, rxdata, length);
+    printf("Data %lu\r\n", bytes);
+    return bytes;
 }
 
 void enable_boot_int_bt(void(*handler)(uint, uint32_t)){
+    gpio_init(BT_BOOT);
+    gpio_set_dir(BT_BOOT, false);
+    gpio_pull_down(BT_RST);
     bootCallback = handler;
-    gpio_set_irq_enabled_with_callback(BT_BOOT, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, handler);
+    gpio_set_irq_enabled_with_callback(BT_BOOT, GPIO_IRQ_EDGE_RISE, true, handler);
 }
 
 void set_boot_int_bt(uint8_t enable){
-    gpio_set_irq_enabled_with_callback(BT_BOOT, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, enable, bootCallback);
+    gpio_set_irq_enabled_with_callback(BT_BOOT, GPIO_IRQ_EDGE_RISE, enable, bootCallback);
 }
 
 int32_t gettick_bt(){
@@ -76,24 +97,6 @@ uint8_t read_boot_pin(){
     return gpio_get(BT_BOOT);
 }
 
-uint32_t __get_PRIMASK(void)
-{
-  uint32_t result;
-
-  __asm volatile ("MRS %0, primask" : "=r" (result) :: "memory");
-  return(result);
-}
-
-void __set_PRIMASK(uint32_t priMask)
-{
-  __asm volatile ("MSR primask, %0" : : "r" (priMask) : "memory");
-}
-
-void __disable_irq(void)
-{
-  __asm volatile ("cpsid i" : : : "memory");
-}
-
 int main() {
     stdio_init_all();
 
@@ -102,9 +105,10 @@ int main() {
     gpio_set_function(TX_PIN, GPIO_FUNC_UART);
 
     printf("Device started!\r\n");
+    
     BTLE_Init();
     
     while(1){
-
+        BTLE_Process();
     }
 }

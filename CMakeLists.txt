@@ -14,6 +14,8 @@ pico_sdk_init()
 
 add_executable(main 
                 main.c
+                btle_driver.c
+                btle_callbacks.c
                 ${CMAKE_CURRENT_SOURCE_DIR}/BlueNRG-2/hci_tl_interface.c
                 ${CMAKE_CURRENT_SOURCE_DIR}/BlueNRG-2/hci_tl.c
                 ${CMAKE_CURRENT_SOURCE_DIR}/BlueNRG-2/bluenrg1_l2cap_aci.c

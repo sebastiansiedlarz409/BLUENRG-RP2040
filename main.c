@@ -2,6 +2,8 @@
 #include "hardware/uart.h"
 #include "hardware/spi.h"
 
+#include "btle_driver.h"
+
 #include <stdio.h>
 #include <stdint.h>
 
@@ -100,6 +102,7 @@ int main() {
     gpio_set_function(TX_PIN, GPIO_FUNC_UART);
 
     printf("Device started!\r\n");
+    BTLE_Init();
     
     while(1){
 

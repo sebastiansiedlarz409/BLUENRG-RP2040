@@ -137,7 +137,6 @@ int32_t HCI_TL_SPI_Receive(uint8_t* buffer, uint16_t size)
 
   /* device is ready */
   byte_count = (header_slave[4] << 8)| header_slave[3];
-  printf("Byte count %u\r\n", byte_count);
 
   if(byte_count > 0)
   {
@@ -314,7 +313,6 @@ void hci_tl_lowlevel_init(void)
 void hci_tl_lowlevel_isr(void)
 {
   int32_t data_available = IsDataAvailable();
-  printf("boot hci_tl_lowlevel_isr, data: %ld\r\n", data_available);
   /* Call hci_notify_asynch_evt() */
   while(data_available)
   {
@@ -323,7 +321,6 @@ void hci_tl_lowlevel_isr(void)
     {
       return;
     }
-    printf("hci_notify_asynch_evt: %ld\r\n", e);
     data_available = IsDataAvailable();
   }
 }

@@ -202,10 +202,8 @@ int hci_send_req(struct hci_request* r, BOOL async)
       
     while (1)
     {
-      printf("List size %ld %u\r\n", list_get_size(&hciReadPktRxQueue), list_is_empty(&hciReadPktRxQueue));
       if ((gettickms_bt() - tickstart) > HCI_DEFAULT_TIMEOUT_MS)
       {
-        printf("TIMEOUT\r\n");
         goto failed;
       }
       if (!list_is_empty(&hciReadPktRxQueue)) 

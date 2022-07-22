@@ -256,7 +256,7 @@ void BTLE_Init(void){
 
 void BTLE_SetConnectable(void){
 	uint8_t ret;
-	char local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME, 'B','T','L','E','-','V','I','T','B','E','R','G'};
+	char local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME, 'B','T','L','E','-','R','P','2','0','4','0'};
 
 	ret = hci_le_set_scan_response_data(0, NULL);
 	if(ret != BLE_STATUS_SUCCESS) goto fail;

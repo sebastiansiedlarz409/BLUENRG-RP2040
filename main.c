@@ -65,7 +65,6 @@ bool is_data_available_bt(){
 
 uint32_t sendrecv_spi_bt(uint8_t* txdata, uint8_t* rxdata, uint32_t length){
     uint32_t bytes = spi_write_read_blocking(BT_SPI, txdata, rxdata, length);
-    printf("Data %lu\r\n", bytes);
     return bytes;
 }
 

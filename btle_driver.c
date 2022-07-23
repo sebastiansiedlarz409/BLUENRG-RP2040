@@ -58,10 +58,15 @@ void hci_disconnection_complete_event(uint8_t Status, uint16_t Connection_Handle
 	BTLE_DBG("BTLE Remote peer disconnected...\r\n");
 }
 
-//this is event callback for read/write override
+//this is event callback for write override
 void aci_gatt_attribute_modified_event(uint16_t Connection_Handle, uint16_t Attr_Handle, uint16_t Offset, uint16_t Attr_Data_Length, uint8_t Attr_Data[]){
 	//call main callback
 	BTLE_AttributeModifiedCallback(Attr_Handle, Attr_Data_Length, Attr_Data);
+}
+
+//this is event callback for read
+void aci_gatt_read_permit_req_event(uint16_t Connection_Handle,uint16_t Attribute_Handle,uint16_t Offset){
+	BTLE_CharRead(Connection_Handle, Attribute_Handle, Offset);
 }
 
 void BTLE_DBG(const char* fmt, ...){
